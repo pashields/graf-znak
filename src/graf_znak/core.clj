@@ -29,7 +29,7 @@
     (when (not-any? nil? group)
       (if (nil? (get @groups group))
         (dosync
-         (alter groups assoc group (AtomicInteger.)))
+         (alter groups assoc group (AtomicInteger. 1)))
         (let [^AtomicInteger counter (get @groups group)]
           (assert (not (nil? counter)))
           (.incrementAndGet counter))))))
@@ -73,12 +73,12 @@
     {:send (partial process hooks state)
      :check (partial check-hook state)}))
 
-(defn> check
+(defn> check-net
   :- (Map (Coll Any) Int)
   [net :- net-type hook :- hook-type]
   ((:check net) hook))
 
-(defn> send
+(defn> send-net
   :- Number
   [net :- net-type val :- input-type]
   ((:send net) val))

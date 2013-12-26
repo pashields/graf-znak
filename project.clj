@@ -6,4 +6,6 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/core.typed "0.2.19"]
                  [org.clojure/algo.generic "0.1.1"]]
-  :core-typed {:check [graf-znak.core]}) 
+  :dev-dependencies [[reiddraper/simple-check "0.5.3"]]
+  :core.typed {:check [graf-znak.core]}
+  :global-vars {*warn-on-reflection* true})
