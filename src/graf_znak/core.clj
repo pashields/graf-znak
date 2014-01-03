@@ -1,15 +1,17 @@
 (ns graf-znak.core
   (:require [clojure.core.typed :refer :all]
-            [clojure.algo.generic.functor :refer :all])
+            [clojure.algo.generic.functor :refer :all]
+            [clojure.core.reducers :as r])
   (:import [java.util.concurrent.atomic AtomicInteger]))
 
 ;; Type aliases
 (def-alias hook-type (Coll (U Keyword String)))
-(def-alias hooks-type (Coll hook-type))
+(def-alias hooks-type (Seq hook-type))
 (def-alias state-type (Map hook-type
-                           (Ref1 (Map (Coll Any) AtomicInteger))))
+                           (Atom1 (Map (Coll Any) AtomicInteger))))
 (def-alias input-type (Map (U Keyword String) Any))
 
+;; Annotations
 (ann ^:no-check clojure.core/not-any? (Fn [(Fn [Any -> Boolean]) (Seq Any) 
                                            -> Boolean]))
 (ann ^:no-check clojure.core/alter (Fn [Any * -> Any]))
@@ -18,6 +20,11 @@
           (Fn [(Fn [x -> y])
                (Map k x) ->
                (Map k y)])))
+(ann ^:no-check clojure.core.reducers/map 
+     (All [x y]
+          (Fn [(Fn [x -> Any]) (Seq x) -> (Seq Any)])))
+(ann ^:no-check clojure.core.reducers/filter
+     (Fn [(Fn [Any -> Boolean]) (Seq Any) -> (Seq Any)]))
 
 (defn> process-hook
   "Processes a single input for a single hook"
@@ -27,7 +34,7 @@
         group (map #(get val %) hook)]
     (assert (not (nil? groups)))
     (when (not-any? nil? group)
-      (if (nil? (get @groups group))
+      (if (not (contains? @groups group))
         (dosync
          (alter groups assoc group (AtomicInteger. 1)))
         (let [^AtomicInteger counter (get @groups group)]
@@ -39,9 +46,12 @@
   :- Number
   [hooks :- hooks-type state :- state-type val :- input-type]
   (count 
-   (remove nil?
-           (for> :- Any [hook :- hook-type hooks] 
-             (process-hook state hook val)))))
+   (into [] (r/filter (fn> :- Boolean
+                           [x :- Any]
+                           (not (nil? x)))
+               (r/map (fn> :- Any
+                           [hook :- hook-type]
+                           (process-hook state hook val)) hooks)))))
 
 (defn> int-value
   :- Int
@@ -69,7 +79,7 @@
   "Generates a new net."
   :- net-type
   [hooks :- hooks-type]
-  (let [state (zipmap hooks (repeatedly #(ref (hook-state-factory))))]
+  (let [state (zipmap hooks (repeatedly #(atom (hook-state-factory))))]
     {:send (partial process hooks state)
      :check (partial check-hook state)}))
 
