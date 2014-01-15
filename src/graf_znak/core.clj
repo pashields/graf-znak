@@ -8,7 +8,7 @@
 (def-alias hook-type (Coll (U Keyword String)))
 (def-alias hooks-type (Seq hook-type))
 (def-alias state-type (Map hook-type
-                           (Atom1 (Map (Coll Any) AtomicInteger))))
+                           (Atom1 (Map (Coll Any) Int))))
 (def-alias input-type (Map (U Keyword String) Any))
 
 ;; Annotations
@@ -34,12 +34,7 @@
         group (map #(get val %) hook)]
     (assert (not (nil? groups)))
     (when (not-any? nil? group)
-      (if (not (contains? @groups group))
-        (dosync
-         (alter groups assoc group (AtomicInteger. 1)))
-        (let [^AtomicInteger counter (get @groups group)]
-          (assert (not (nil? counter)))
-          (.incrementAndGet counter))))))
+      (swap! groups (fn> [coll :- (Map (Coll Any) Int) k :- (Coll Any)] (assoc coll k (inc (get coll k 0)))) group))))
 
 (defn> process
   "Processes a single input for n hooks"
@@ -64,10 +59,10 @@
   [state :- state-type hook :- hook-type]
   (let [categories (get state hook)]
     (assert (not (nil? categories)))
-    (fmap int-value @categories)))
+    @categories))
 
 (defn> hook-state-factory
-  :- (Map (Coll Any) AtomicInteger)
+  :- (Map (Coll Any) Int)
   []
   {})
 
