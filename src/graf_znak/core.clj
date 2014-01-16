@@ -1,14 +1,15 @@
 (ns graf-znak.core
   (:require [clojure.core.typed :refer :all]
             [clojure.algo.generic.functor :refer :all]
-            [clojure.core.reducers :as r])
+            [clojure.core.reducers :as r]
+            [graf-znak.hook-storage :refer :all])
   (:import [java.util.concurrent.atomic AtomicInteger]))
 
 ;; Type aliases
 (def-alias hook-type (Coll (U Keyword String)))
 (def-alias hooks-type (Seq hook-type))
 (def-alias state-type (Map hook-type
-                           (Atom1 (Map (Coll Any) Int))))
+                           HookStorage))
 (def-alias input-type (Map (U Keyword String) Any))
 
 ;; Annotations
@@ -30,11 +31,11 @@
   "Processes a single input for a single hook"
   :- Any
   [state :- state-type hook :- hook-type val :- input-type]
-  (let [groups (get state hook)
+  (let [storage (get state hook)
         group (map #(get val %) hook)]
-    (assert (not (nil? groups)))
+    (assert (not (nil? storage)))
     (when (not-any? nil? group)
-      (swap! groups (fn> [coll :- (Map (Coll Any) Int) k :- (Coll Any)] (assoc coll k (inc (get coll k 0)))) group))))
+      (inc-hook storage group))))
 
 (defn> process
   "Processes a single input for n hooks"
@@ -48,38 +49,28 @@
                            [hook :- hook-type]
                            (process-hook state hook val)) hooks)))))
 
-(defn> int-value
-  :- Int
-  [^AtomicInteger value :- AtomicInteger]
-  (.intValue value))
-
 (defn> check-hook
   "Returns all groups and their respective counts for a given hook."
-  :- (Map (Coll Any) Int)
+  :- (Map (Coll Any) Number)
   [state :- state-type hook :- hook-type]
-  (let [categories (get state hook)]
-    (assert (not (nil? categories)))
-    @categories))
-
-(defn> hook-state-factory
-  :- (Map (Coll Any) Int)
-  []
-  {})
+  (let [storage (get state hook)]
+    (assert (not (nil? storage)))
+    (get-groups storage)))
 
 (def-alias send-type (Fn [input-type -> Number]))
-(def-alias check-type (Fn [hook-type -> (Map (Coll Any) Int)]))
+(def-alias check-type (Fn [hook-type -> (Map (Coll Any) Number)]))
 (def-alias net-type (HMap :mandatory {:send send-type :check check-type}))
 
 (defn> create-net
   "Generates a new net."
   :- net-type
-  [hooks :- hooks-type]
-  (let [state (zipmap hooks (repeatedly #(atom (hook-state-factory))))]
+  [hooks :- hooks-type storage-factory :- (Fn [-> HookStorage])]
+  (let [state (zipmap hooks (repeatedly storage-factory))]
     {:send (partial process hooks state)
      :check (partial check-hook state)}))
 
 (defn> check-net
-  :- (Map (Coll Any) Int)
+  :- (Map (Coll Any) Number)
   [net :- net-type hook :- hook-type]
   ((:check net) hook))
 

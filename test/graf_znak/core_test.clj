@@ -1,6 +1,7 @@
 (ns graf-znak.core-test
   (:require [clojure.test :refer :all]
             [graf-znak.core :refer :all]
+            [graf-znak.atom-storage :as atom-storage]
             [simple-check.core :as sc]
             [simple-check.generators :as gen]
             [simple-check.properties :as prop]
@@ -35,7 +36,7 @@
 
 (defn graf-groups
   [hook-colls inputs]
-  (let [net (create-net [hook-colls])]
+  (let [net (create-net [hook-colls] atom-storage/factory)]
     (doseq [i inputs] (send-net net i))
     (check-net net hook-colls)))
 
