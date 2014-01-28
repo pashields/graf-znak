@@ -2,8 +2,7 @@
   (:require [clojure.core.typed :refer :all]
             [clojure.algo.generic.functor :refer :all]
             [clojure.core.reducers :as r]
-            [graf-znak.hook-storage :refer :all])
-  (:import [java.util.concurrent.atomic AtomicInteger]))
+            [graf-znak.hook-storage :refer :all]))
 
 ;; Type aliases
 (def-alias hook-type (Coll (U Keyword String)))
