@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [graf-znak.core :refer :all]
             [graf-znak.atom-storage :as atom-storage]
+            [graf-znak.concurrent-hash-storage :as concurrent-hash-storage]
             [simple-check.core :as sc]
             [simple-check.generators :as gen]
             [simple-check.properties :as prop]
@@ -35,20 +36,22 @@
   (count-inputs hook-colls inputs))
 
 (defn graf-groups
-  [hook-colls inputs]
-  (let [net (create-net [hook-colls] atom-storage/factory)]
+  [factory hook-colls inputs]
+  (let [net (create-net [hook-colls] factory)]
     (doseq [i inputs] (send-net net i))
     (check-net net hook-colls)))
 
 (defn check-inputs
-  [hook-colls inputs]
-  (= (graf-groups hook-colls inputs) 
+  [factory hook-colls inputs]
+  (= (graf-groups factory hook-colls inputs) 
      (freq-groups hook-colls inputs)))
 
-(def hook-prop
+(defn hook-prop-factory
+  [storage-factory]
   (let [hook-colls [:a :b]]
     (prop/for-all [inputs (gen-inputs hook-colls)]
-                  (check-inputs hook-colls inputs))))
+                  (check-inputs storage-factory hook-colls inputs))))
 
 (binding [*report-trials* true]
- (defspec basic 1000 hook-prop))
+  (defspec atom-basic 1000 (hook-prop-factory atom-storage/factory))
+  (defspec chash-basic 1000 (hook-prop-factory concurrent-hash-storage/factory)))
