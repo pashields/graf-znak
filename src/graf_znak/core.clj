@@ -1,6 +1,5 @@
 (ns graf-znak.core
   (:require [clojure.core.typed :refer :all]
-            [clojure.algo.generic.functor :refer :all]
             [clojure.core.reducers :as r]
             [graf-znak.hook-storage :refer :all]))
 
@@ -14,12 +13,6 @@
 ;; Annotations
 (ann ^:no-check clojure.core/not-any? (Fn [(Fn [Any -> Boolean]) (Seq Any) 
                                            -> Boolean]))
-(ann ^:no-check clojure.core/alter (Fn [Any * -> Any]))
-(ann ^:no-check clojure.algo.generic.functor/fmap
-     (All [x y k] 
-          (Fn [(Fn [x -> y])
-               (Map k x) ->
-               (Map k y)])))
 (ann ^:no-check clojure.core.reducers/map 
      (All [x y]
           (Fn [(Fn [x -> Any]) (Seq x) -> (Seq Any)])))

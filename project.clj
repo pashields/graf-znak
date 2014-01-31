@@ -4,8 +4,8 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/core.typed "0.2.19"]
-                 [org.clojure/algo.generic "0.1.1"]]
+                 [org.clojure/core.typed "0.2.26"]]
   :core.typed {:check [graf-znak.core
                        graf-znak.hook-storage
-                       graf-znak.atom-storage]})
+                       graf-znak.atom-storage
+                       graf-znak.concurrent-hash-storage]})
