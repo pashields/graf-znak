@@ -46,8 +46,8 @@
   [factory hook-colls inputs]
   (let [hook (->Hook hook-colls [counter])
         net (create-net [hook] factory)]
-    (doseq [i inputs] (send-net net i))
-    (let [hook-results (check-net net hook)]
+    (doseq [i inputs] (put net i))
+    (let [hook-results (check net hook)]
       (into {} (map (fn [[k v]] [k (:count v)]) hook-results)))))
 
 (defn check-inputs

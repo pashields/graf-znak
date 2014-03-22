@@ -49,24 +49,26 @@
     (assert (not (nil? hook-storage)))
     (get-groups hook-storage)))
 
-(def-alias net-type (HMap :mandatory {:hooks hooks-type :state state-type}))
+(ann-record Net [hooks :- hooks-type state :- state-type])
+(defrecord Net [hooks state])
+(def-alias net-type Net)
 
 (defn> create-net
   "Generates a new net. A net is a stateful datum that can be used to run
    accumulations over groups of data."
-  :- net-type
+  :- Net
   [hooks :- hooks-type storage-factory :- (Fn [-> HookStorage])]
   (let [state (zipmap hooks (repeatedly storage-factory))]
-    {:hooks hooks :state state}))
+    (->Net hooks state)))
 
-(defn> check-net
+(defn> check
   "Get the current groups and their accumulations for a given hook."
   :- hook-result-type
-  [net :- net-type hook :- hook-type]
+  [net :- Net hook :- hook-type]
   (check-hook (:state net) hook))
 
-(defn> send-net
+(defn> put
   "Update a net with a new value."
   :- Number
-  [net :- net-type val :- input-type]
+  [net :- Net val :- input-type]
   (process (:hooks net) (:state net) val))

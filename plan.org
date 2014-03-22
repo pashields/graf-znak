@@ -3,7 +3,7 @@
 ** TODO Add disk backed Storage
 ** TODO Add counter accumulator
 ** TODO Add unique set accum (this is not possible now)
-** TODO Convert net to record
+** DONE Convert net to record
 ** TODO Add more testing, including unit
 ** TODO Review README
 ** TODO Benchmark
