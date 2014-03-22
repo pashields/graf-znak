@@ -1,72 +1,72 @@
 (ns graf-znak.core
   (:require [clojure.core.typed :refer :all]
             [clojure.core.reducers :as r]
-            [graf-znak.hook-storage :refer :all]))
+            [graf-znak.hooks :refer :all]))
 
 ;; Type aliases
-(def-alias hook-type (Coll (U Keyword String)))
 (def-alias hooks-type (Seq hook-type))
 (def-alias state-type (Map hook-type
                            HookStorage))
-(def-alias input-type (Map (U Keyword String) Any))
 
 ;; Annotations
-(ann ^:no-check clojure.core/not-any? (Fn [(Fn [Any -> Boolean]) (Seq Any) 
+(ann ^:no-check clojure.core/not-any? (Fn [(Fn [Any -> Boolean]) (Seq Any)
                                            -> Boolean]))
-(ann ^:no-check clojure.core.reducers/map 
+(ann ^:no-check clojure.core.reducers/map
      (All [x y]
           (Fn [(Fn [x -> Any]) (Seq x) -> (Seq Any)])))
 (ann ^:no-check clojure.core.reducers/filter
      (Fn [(Fn [Any -> Boolean]) (Seq Any) -> (Seq Any)]))
 
 (defn> process-hook
-  "Processes a single input for a single hook"
+  "Processes a single input for all accumulators in a hook."
   :- Any
   [state :- state-type hook :- hook-type val :- input-type]
-  (let [storage (get state hook)
-        group (map #(get val %) hook)]
-    (assert (not (nil? storage)))
+  (let [{fields :fields accums :accumulators} hook
+        hook-storage (get state hook)
+        group (map #(get val %) fields)]
+    (assert (not (nil? hook-storage)))
     (when (not-any? nil? group)
-      (inc-hook storage group))))
+      (doseq> [accum :- accumulator-type accums]
+        (accumulate-hook hook-storage group val accum)))))
 
 (defn> process
   "Processes a single input for n hooks"
   :- Number
   [hooks :- hooks-type state :- state-type val :- input-type]
-  (count 
+  (count
    (into [] (r/filter (fn> :- Boolean
                            [x :- Any]
                            (not (nil? x)))
-               (r/map (fn> :- Any
-                           [hook :- hook-type]
-                           (process-hook state hook val)) hooks)))))
+                      (r/map (fn> :- Any
+                                  [hook :- hook-type]
+                                  (process-hook state hook val)) hooks)))))
 
 (defn> check-hook
-  "Returns all groups and their respective counts for a given hook."
-  :- (Map (Coll Any) Number)
+  "Returns all groups and their respective accumulations for a given hook."
+  :- hook-result-type
   [state :- state-type hook :- hook-type]
-  (let [storage (get state hook)]
-    (assert (not (nil? storage)))
-    (get-groups storage)))
+  (let [hook-storage (get state hook)]
+    (assert (not (nil? hook-storage)))
+    (get-groups hook-storage)))
 
-(def-alias send-type (Fn [input-type -> Number]))
-(def-alias check-type (Fn [hook-type -> (Map (Coll Any) Number)]))
-(def-alias net-type (HMap :mandatory {:send send-type :check check-type}))
+(def-alias net-type (HMap :mandatory {:hooks hooks-type :state state-type}))
 
 (defn> create-net
-  "Generates a new net."
+  "Generates a new net. A net is a stateful datum that can be used to run
+   accumulations over groups of data."
   :- net-type
   [hooks :- hooks-type storage-factory :- (Fn [-> HookStorage])]
   (let [state (zipmap hooks (repeatedly storage-factory))]
-    {:send (partial process hooks state)
-     :check (partial check-hook state)}))
+    {:hooks hooks :state state}))
 
 (defn> check-net
-  :- (Map (Coll Any) Number)
+  "Get the current groups and their accumulations for a given hook."
+  :- hook-result-type
   [net :- net-type hook :- hook-type]
-  ((:check net) hook))
+  (check-hook (:state net) hook))
 
 (defn> send-net
+  "Update a net with a new value."
   :- Number
   [net :- net-type val :- input-type]
-  ((:send net) val))
+  (process (:hooks net) (:state net) val))
