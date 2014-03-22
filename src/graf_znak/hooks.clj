@@ -1,24 +1,7 @@
 (ns graf-znak.hooks
-  "Contains the records and protocols required by graf-znak."
-  (:require [clojure.core.typed :refer :all]))
-
-;; Accumulator
-;; Accumulators form the basis of all graf-znak operations. The name of the
-;; accumulator should be unique, as it may be used by storage. The
-;; accumulator function should handle an initial state type of nil. Whatever
-;; is returned by the function will be stored as state for the next execution.
-;; Accumulator functions should be thread-safe.
-(def-alias accumulator-name-type (U String Keyword))
-(def-alias accumulator-state-type Any)
-(def-alias input-type (Map (U Keyword String) Any))
-(def-alias accumulator-fn-type (Fn [accumulator-state-type input-type ->
-                                    accumulator-state-type]))
-
-(ann-record Accumulator
-            [name :- accumulator-name-type
-             fn :- accumulator-fn-type])
-(defrecord Accumulator [name fn])
-(def-alias accumulator-type Accumulator)
+  "Contains the records and protocols related to hooks."
+  (:require [clojure.core.typed :refer :all]
+            [graf-znak.accumulators :refer :all]))
 
 ;; Hook
 ;; Hooks are collections of accumulators that will be run on groups of the
@@ -28,7 +11,7 @@
 (def-alias fields-type (Coll (U Keyword String)))
 
 (ann-record Hook [fields :- fields-type
-                  accumulators :- (Coll Accumulator)])
+                  accumulators :- (Coll accumulator-type)])
 (defrecord Hook [fields accumulators])
 (def-alias hook-type Hook)
 
@@ -42,7 +25,7 @@
                                       accumulator-state-type)))
 
 (ann-protocol HookStorage
-              accumulate-hook [HookStorage group-type input-type Accumulator
+              accumulate-hook [HookStorage group-type input-type accumulator-type
                                -> accumulator-state-type]
               get-groups [HookStorage -> hook-result-type])
 (defprotocol> HookStorage

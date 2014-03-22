@@ -1,7 +1,8 @@
 (ns graf-znak.core
   (:require [clojure.core.typed :refer :all]
             [clojure.core.reducers :as r]
-            [graf-znak.hooks :refer :all]))
+            [graf-znak.hooks :refer :all]
+            [graf-znak.accumulators :refer :all]))
 
 ;; Type aliases
 (def-alias hooks-type (Seq hook-type))

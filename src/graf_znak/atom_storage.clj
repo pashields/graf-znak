@@ -1,7 +1,8 @@
 (ns graf-znak.atom-storage
   "Exposes the AtomStorage type which implements an atom backed HookStorage."
   (:require [clojure.core.typed :refer :all]
-            [graf-znak.hooks :refer :all]))
+            [graf-znak.hooks :refer :all]
+            [graf-znak.accumulators :refer :all]))
 
 (def-alias inner-storage (Map group-type
                               (Map accumulator-name-type

@@ -2,18 +2,13 @@
   (:require [clojure.test :refer :all]
             [graf-znak.core :refer :all]
             [graf-znak.hooks :refer :all]
+            [graf-znak.accumulators :refer :all]
             [graf-znak.atom-storage :as atom-storage]
             ;[graf-znak.concurrent-hash-storage :as concurrent-hash-storage]
             [simple-check.core :as sc]
             [simple-check.generators :as gen]
             [simple-check.properties :as prop]
             [simple-check.clojure-test :refer :all]))
-
-(def counter 
-  (->Accumulator :count
-                 (fn [state input]
-                   (let [state (or state 0)]
-                     (inc state)))))
 
 (defn count-inputs
   [colls inputs]
