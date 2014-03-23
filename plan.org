@@ -1,8 +1,8 @@
 * Pre-release
-** TODO Fix concurrent hash storage
+** DONE Fix concurrent hash storage
 ** TODO Add disk backed Storage
 ** DONE Add counter accumulator
-** TODO Add unique set accum (this is not possible now)
+** DONE Add unique set accum (this is not possible now)
 ** DONE Convert net to record
 ** TODO Add more testing, including unit
 ** TODO Review README
