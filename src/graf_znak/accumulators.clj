@@ -1,6 +1,7 @@
 (ns graf-znak.accumulators
   "Contains the accumulator record and types as well as pre-built instances."
-  (:require [clojure.core.typed :refer :all]))
+  (:require [clojure.core.typed :refer :all])
+  (:import [java.util.concurrent.atomic AtomicLong]))
 
 ;; Accumulator
 ;; Accumulators form the basis of all graf-znak operations. The name of the
@@ -10,15 +11,16 @@
 ;; Accumulator functions should be thread-safe.
 (def-alias accumulator-name-type (U String Keyword))
 (def-alias accumulator-state-type Any)
+(def-alias accumulator-init-fn-type (Fn [-> accumulator-state-type]))
 (def-alias input-type (Map (U Keyword String) Any))
 (def-alias accumulator-fn-type (Fn [accumulator-state-type input-type ->
                                     accumulator-state-type]))
 
 (ann-record Accumulator
             [name :- accumulator-name-type
-             initial-state :- accumulator-state-type
+             init-fn :- accumulator-init-fn-type
              fn :- accumulator-fn-type])
-(defrecord Accumulator [name initial-state fn])
+(defrecord Accumulator [name init-fn fn])
 (def-alias accumulator-type Accumulator)
 
 ;; Prebuilt Accumulators
@@ -26,12 +28,24 @@
 (def counter
   (->Accumulator
    :count
-   0
+   (fn [] 0)
    (fn> :- AnyInteger
         [state :- Any
          _ :- input-type]
         (assert (integer? state))
         (inc state))))
+
+(ann stateful-counter Accumulator)
+(def stateful-counter
+  (->Accumulator
+   :count
+   (fn [] (AtomicLong.))
+   (fn> :- (Value nil)
+        [state :- Any
+         _ :- input-type]
+        (assert (instance? AtomicLong state))
+        (.incrementAndGet ^AtomicLong state)
+        nil)))
 
 (defn> unique-factory
   "Creates an accumulator that will hold all unique combinations of specified
@@ -46,7 +60,7 @@
   [name :- accumulator-name-type fields :- (Coll Any)]
   (->Accumulator
    name
-   #{}
+   (fn [] #{})
    (fn> :- (Set (Coll Any))
         [state :- Any
          input :- input-type]

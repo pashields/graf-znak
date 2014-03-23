@@ -8,4 +8,5 @@
   :core.typed {:check [graf-znak.accumulators
                        graf-znak.hooks
                        graf-znak.atom-storage
+                       graf-znak.concurrent-hash-storage
                        graf-znak.core]})
