@@ -68,4 +68,6 @@
           ;; As of this writing pred requires fully qualified symbols if check-ns
           ;; is called from another namespace. blech.
           (assert ((pred (clojure.core.typed/Set (clojure.core.typed/Coll Any))) state))
-          (conj state (into {} (interleave fields vals)))))))
+          (if (not-any? nil? vals)
+            (conj state (apply hash-map (interleave fields vals)))
+            state)))))
