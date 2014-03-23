@@ -1,4 +1,12 @@
 (ns graf-znak.concurrent-hash-storage
+  "Exposes the ConcurrentHashStorage type which implements HookStorage backed
+   by a java ConcurrentHashMap.
+
+   Accumulations done on this storage are not transactional. They are expected
+   to mutate the existing state (specified originally by the accumulators
+   initial state). They accumulators should be thread safe.
+
+   Generally, this storage is only advisable if performance requires it."
   (:require [clojure.core.typed :refer :all]
             [graf-znak.hooks :refer :all]
             [graf-znak.accumulators :refer :all])
@@ -12,6 +20,8 @@
 ;; awful quite yet. Punting for now.
 (ann ^:no-check safe-put (All [x] (Fn [ConcurrentHashMap Object (Fn [-> x]) -> x])))
 (defn safe-put
+  "Like put if absent, but only actually loads the potential value after an
+   initial empty check."
   [^ConcurrentHashMap hashmap key val-factory]
   (when (not (.contains hashmap key))
     (let [v (val-factory)]
@@ -23,6 +33,7 @@
 
 (ann ^:no-check convert-groups (Fn [ConcurrentHashMap -> (Map Object Object)]))
 (defn convert-groups
+  "Brings hashmap backed groups into clojure data structures."
   [^ConcurrentHashMap storage]
   (into {}
         (map (fn>
