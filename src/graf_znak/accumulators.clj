@@ -16,8 +16,9 @@
 
 (ann-record Accumulator
             [name :- accumulator-name-type
+             initial-state :- accumulator-state-type
              fn :- accumulator-fn-type])
-(defrecord Accumulator [name fn])
+(defrecord Accumulator [name initial-state fn])
 (def-alias accumulator-type Accumulator)
 
 ;; Prebuilt Accumulators
@@ -25,12 +26,12 @@
 (def counter
   (->Accumulator
    :count
+   0
    (fn> :- AnyInteger
         [state :- Any
          _ :- input-type]
-        (let [state (or state 0)]
-          (assert (integer? state))
-          (inc state)))))
+        (assert (integer? state))
+        (inc state))))
 
 (defn> unique-factory
   "Creates an accumulator that will hold all unique combinations of specified
@@ -45,11 +46,11 @@
   [name :- accumulator-name-type fields :- (Coll Any)]
   (->Accumulator
    name
+   #{}
    (fn> :- (Set (Coll Any))
         [state :- Any
          input :- input-type]
-        (let [state (or state (ann-form #{} (Set (Coll Any))))
-              vals (map #(get input %) fields)]
+        (let [vals (map #(get input %) fields)]
           ;; As of this writing pred requires fully qualified symbols if check-ns
           ;; is called from another namespace. blech.
           (assert ((pred (clojure.core.typed/Set (clojure.core.typed/Coll Any))) state))

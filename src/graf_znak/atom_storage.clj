@@ -16,9 +16,9 @@
    k :- group-type
    record :- input-type
    accumulator :- accumulator-type]
-  (let [{accum-name :name accum-fn :fn} accumulator
+  (let [{accum-name :name init :initial-state accum-fn :fn} accumulator
         old (get coll k {})
-        old-accum (get old accum-name)
+        old-accum (get old accum-name init)
         new-accum (accum-fn old-accum record)]
     (assoc coll k (assoc old accum-name new-accum))))
 
