@@ -73,10 +73,10 @@ You can also build your own ```HookStorage``` by implementing the ```HookStorage
 
 Nets are collections of hooks and a backing storage system for those hooks. Use like so:
 
-```
+```clojure
 (use 'graf-znak.core)
 (def my-net (create-net my-hooks my-storage-factory))
-(put my-net {:a 1 :b 2 :c 3})
+(put my-net {:a 1 :b 2 :c 3}) ; 1 ;;number of groups matched
 (check my-net my-hook) ; {(1 3) 1}
 ```
 
