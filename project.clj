@@ -5,6 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/core.typed "0.2.40"]]
+  :plugins [[lein-typed "0.3.3"]]
   :core.typed {:check [graf-znak.accumulators
                        graf-znak.hooks
                        graf-znak.atom-storage
