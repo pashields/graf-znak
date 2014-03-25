@@ -1,5 +1,7 @@
 # graf-znak
 
+[![Build Status](https://travis-ci.org/pashields/graf-znak.svg?branch=master)](https://travis-ci.org/pashields/graf-znak)
+
 A Clojure library designed to run arbitrary accumulations across groups. It is written using [core.typed](https://github.com/clojure/core.typed).
 
 ## Usage
