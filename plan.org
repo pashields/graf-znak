@@ -5,5 +5,5 @@
 ** DONE Add unique set accum (this is not possible now)
 ** DONE Convert net to record
 ** TODO Add more testing, including unit
-** TODO Review README
+** DONE Review README
 ** TODO Benchmark
