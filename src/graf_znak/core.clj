@@ -20,16 +20,15 @@
     (assert (not (nil? hook-storage)))
     (when (not-any? nil? group)
       (doseq> [accum :- accumulator-type accums]
-        (accumulate-hook hook-storage group val accum)))))
+        (accumulate-hook hook-storage group val accum))
+      true)))
 
 (defn> process
   "Processes a single input for n hooks"
   :- Number
   [hooks :- hooks-type state :- state-type val :- input-type]
   (count
-   (into [] (r/filter (fn> :- Boolean
-                           [x :- Any]
-                           (not (nil? x)))
+   (into [] (r/filter true?
                       (r/map (fn> :- Any
                                   [hook :- hook-type]
                                   (process-hook state hook val)) hooks)))))
