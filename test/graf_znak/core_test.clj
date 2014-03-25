@@ -10,6 +10,20 @@
             [clojure.test.check.properties :as prop]
             [clojure.test.check.clojure-test :refer :all]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Unit Testing
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(deftest put-returns-group-count
+  (let [name-hook (->Hook [:name] [counter])
+        age-hook  (->Hook [:age] [counter])
+        net (create-net [name-hook age-hook] atom-storage/factory)]
+    (is (= 0 (put net {:food :pizza})))
+    (is (= 1 (put net {:food :pizza :name "Pat"})))
+    (is (= 2 (put net {:food :pizza :name "Pat" :age 28})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Property based testing
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn get-records
   [colls inputs]
   (map #(map (fn [k] (get % k)) colls) inputs))
@@ -92,5 +106,4 @@
                                 [:a :b :c :d]
                                 inputs
                                 (unique-factory :uniques [:b])
-                                (partial unique-vals [:b]))))
-  )
+                                (partial unique-vals [:b])))))
