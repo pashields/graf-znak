@@ -8,10 +8,10 @@ A Clojure library designed to run arbitrary accumulations across groups. It is w
 
 Graf-znak is composed of a few main abstractions:
 
-* Accumulator - a wrapper around a function that will, well, accumulate for you
-* Hook - a set of attribute names and a set of accumulators that will run on groups in that attribute set
-* HookStorage - a backing storage system for the state of hooks
-* Net - a stateful collection of hooks and their backing storage
+* ```Accumulator``` - a wrapper around a function that will, well, accumulate for you
+* ```Hook``` - a set of attribute names and a set of accumulators that will run on groups in that attribute set
+* ```HookStorage``` - a backing storage system for the state of hooks
+* ```Net``` - a stateful collection of hooks and their backing storage
 
 Say, for example, that we have a list of people, like
 
@@ -39,31 +39,31 @@ We can do that by doing the following:
 
 Graf-znak ships with a few built in accumulators, located in the ```graf-znak.accumulators``` namespace:
 
-* counter - A pure accumulator that simply counts each instance passed to it.
-* stateful-counter - An impure counting accumulator. Meant to be used with unwrapped mutable backing storage.
+* ```counter``` - A pure accumulator that simply counts each instance passed to it.
+* ```stateful-counter``` - An impure counting accumulator. Meant to be used with unwrapped mutable backing storage.
 * unique (factory provided) - A pure accumulator that will capture all unique combinations of specific fields.
 
 You can (and should) also build your own accumulators. There is a record type Accumulator that contains:
 
-* name - a unique name for the accumulator (collisions can occur within a single hook)
-* init-fn - a function that will be called with no arguments that should return an initial state for the accumulator
-* fn - a function that will be called for every new value and will be passed the state and the full input record.
+* ```name``` - a unique name for the accumulator (collisions can occur within a single hook)
+* ```init-fn``` - a function that will be called with no arguments that should return an initial state for the accumulator
+* ```fn``` - a function that will be called for every new value and will be passed the state and the full input record.
 
 ### Hooks
 
 Hooks are just collections of accumulators tied to a specific collection of columns to group by. Hooks are implemented as a record that contains:
 
-* fields - a list of fields that will be used for grouping
-* accumulators - a list of accumulators that will be called on all values in this grouping.
+* ```fields``` - a list of fields that will be used for grouping
+* ```accumulators``` - a list of accumulators that will be called on all values in this grouping.
 
 Records that do not contain all the fields in the hook's fields list will be ignored by the hook.
 
 ### HookStorage
 
-Hooks describe the mechanism for running accumulations, but the actual data they produce is stored in HookStorage. Graf-znak ships with two different types of HookStorage right now:
+Hooks describe the mechanism for running accumulations, but the actual data they produce is stored in ```HookStorage```. Graf-znak ships with two different types of HookStorage right now:
 
-* atom-storage - Uses clojure STM to control access across threads. Accumulators should be pure functions and return the new state they want stored.
-* concurrent-hash-storage - Uses a java ```ConcurrentHashMap``` under the covers. Accumulators should mutate the state they recieve.
+* ```atom-storage``` - Uses clojure STM to control access across threads. Accumulators should be pure functions and return the new state they want stored.
+* ```concurrent-hash-storage``` - Uses a java ```ConcurrentHashMap``` under the covers. Accumulators should mutate the state they recieve.
 
 In general, atom-storage should be used unless your use case has extreme performance requirements.
 
