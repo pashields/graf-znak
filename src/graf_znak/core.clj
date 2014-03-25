@@ -2,21 +2,13 @@
   (:require [clojure.core.typed :refer :all]
             [clojure.core.reducers :as r]
             [graf-znak.hooks :refer :all]
-            [graf-znak.accumulators :refer :all]))
+            [graf-znak.accumulators :refer :all]
+            [graf-znak.annotations :refer :all]))
 
 ;; Type aliases
 (def-alias hooks-type (Seq hook-type))
 (def-alias state-type (Map hook-type
                            HookStorage))
-
-;; Annotations
-(ann ^:no-check clojure.core/not-any? (Fn [(Fn [Any -> Boolean]) (Seq Any)
-                                           -> Boolean]))
-(ann ^:no-check clojure.core.reducers/map
-     (All [x y]
-          (Fn [(Fn [x -> Any]) (Seq x) -> (Seq Any)])))
-(ann ^:no-check clojure.core.reducers/filter
-     (Fn [(Fn [Any -> Boolean]) (Seq Any) -> (Seq Any)]))
 
 (defn> process-hook
   "Processes a single input for all accumulators in a hook."

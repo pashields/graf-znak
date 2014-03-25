@@ -1,6 +1,7 @@
 (ns graf-znak.accumulators
   "Contains the accumulator record and types as well as pre-built instances."
-  (:require [clojure.core.typed :refer :all])
+  (:require [clojure.core.typed :refer :all]
+            [graf-znak.annotations :refer :all])
   (:import [java.util.concurrent.atomic AtomicLong]))
 
 ;; Accumulator
@@ -65,9 +66,7 @@
         [state :- Any
          input :- input-type]
         (let [vals (map #(get input %) fields)]
-          ;; As of this writing pred requires fully qualified symbols if check-ns
-          ;; is called from another namespace. blech.
-          (assert ((pred (clojure.core.typed/Set (clojure.core.typed/Coll Any))) state))
+          (assert ((pred (Set (Coll Any))) state))
           (if (not-any? nil? vals)
-            (conj state (apply hash-map (interleave fields vals)))
+            (conj state (zipmap fields vals))
             state)))))
